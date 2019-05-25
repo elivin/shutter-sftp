@@ -74,6 +74,8 @@ sub init {
     use IO::File;
     use File::Basename qw(basename);
 
+    $Net::SFTP::Foreign::debug = -1;
+
     $self->{_config} = { };
 	$self->{_config_file} = $ENV{'HOME'} . '/.config/shutter-sftp.json';
 
@@ -121,6 +123,7 @@ sub upload {
 
     my %ssh_opts = (
         'user' => $username,
+        'more' => '-v',
     );
 
     if( $password ne "" ) {
@@ -140,11 +143,11 @@ sub upload {
             $self->{_sftp} = Net::SFTP::Foreign->new($self->{_config}->{host}, %ssh_opts);
 
             unless( $self->{_sftp} ){
-                $self->{_links}{'status'} = 999;
+                $self->{_links}{'status'} = "SFTP initial error";
             }
 
             unless( $self->{_sftp}->put($upload_filename, $self->{_remote_file}) ) {
-                $self->{_links}{'status'} = 998;
+                $self->{_links}{'status'} = "Error: " . $self->{_sftp}->error;
             }
 
             $self->{_links}{'direct_link'} = $link;
